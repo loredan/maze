@@ -12,6 +12,6 @@ for i in range(500):
     for j in range(500):
         column += [{DIRECTIONS[2]: j != 0, DIRECTIONS[3]: False}]
     maze.walls += [column]
-maze.flood = maze.Flood(maze.walls, 0.01)
+maze.flood = maze.Flood(maze.walls, 1)
 canvas.after(0, lambda: maze.draw_flood(canvas, 10))
 root.mainloop()

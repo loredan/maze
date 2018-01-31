@@ -1,5 +1,6 @@
 import colorsys
 from matplotlib._cm import cubehelix as mcubehelix
+from matplotlib.cm import ScalarMappable
 import cubehelix
 
 DIRECTIONS = ["LEFT", "TOP", "RIGHT", "BOTTOM"]
@@ -14,8 +15,9 @@ class Maze:
             for j in range(size):
                 column += [{DIRECTIONS[2]: False, DIRECTIONS[3]: False}]
             self.walls += [column]
-        self.flood = self.Flood(self.walls, 0.01)
-        self.colormap = mcubehelix()
+        self.flood = self.Flood(self.walls, 1)
+        self.colormap1 = cubehelix.cmap(startHue=-100, endHue=80, minSat=0.75, maxSat=1.5, minLight=0.35, maxLight=0.8)
+        self.colormap2 = cubehelix.cmap(startHue=-100, endHue=80, minSat=1.5, maxSat=0.75, minLight=0.8, maxLight=0.35)
 
     def set_wall(self, x, y, direction, wall):
         if x < 0 or y < 0 or x > len(self.walls) or y > len(self.walls) or x == len(
@@ -26,8 +28,7 @@ class Maze:
     def draw_flood(self, canvas, step_time_ms):
         flood_step = self.flood.step()
         # rgb = colorsys.hsv_to_rgb(flood_step["hue"] / 360, 1, 1)
-        rgb = (self.colormap["red"](flood_step["position"]), self.colormap["green"](flood_step["position"]),
-               self.colormap["blue"](flood_step["position"]))
+        rgb = self.to_rgba(flood_step["position"])
         color = "#" + \
                 str(hex(int(rgb[0] * 255)))[2:].rjust(2, '0') + \
                 str(hex(int(rgb[1] * 255)))[2:].rjust(2, '0') + \
@@ -36,6 +37,12 @@ class Maze:
             canvas.create_rectangle(point["x"], point["y"], point["x"] + 1, point["y"] + 1, fill=color, width=0)
         if len(flood_step["front"]) > 0:
             canvas.after(step_time_ms, lambda: self.draw_flood(canvas, step_time_ms))
+
+    def to_rgba(self, value):
+        if value < 256:
+            return self.colormap1(value)
+        else:
+            return self.colormap2(value - 256)
 
     class Flood:
         def __init__(self, walls, step):
@@ -94,5 +101,5 @@ class Maze:
             for point in self.front:
                 new_front += self.step_point(point)
             self.front = new_front
-            self.position = (self.position + self.position_step) % 1
+            self.position = (self.position + self.position_step) % 512
             return {"front": new_front, "position": self.position}
