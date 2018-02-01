@@ -1,3 +1,5 @@
+from tkinter import Canvas
+
 import cubehelix
 
 DIRECTIONS = ["LEFT", "TOP", "RIGHT", "BOTTOM"]
@@ -27,10 +29,60 @@ class Maze:
             return
         self.paths[x][y][direction] = path
 
-    def draw_flood(self, canvas, step_time_ms):
+    def draw_maze(self, canvas: Canvas):
+        scale = canvas.winfo_width() / (self.size * 2 + 1)
+        canvas.create_rectangle(scale / 2, scale / 2, canvas.winfo_width() - scale / 2,
+                                canvas.winfo_width() - scale / 2, width=scale)
+        for i in range(self.size):
+            for j in range(self.size):
+                canvas.create_rectangle((i * 2 + 2) * scale, (j * 2 + 2) * scale, (i * 2 + 3) * scale,
+                                        (j * 2 + 3) * scale, fill='black', width=0)
+                if not self.paths[i][j][DIRECTIONS[2]]:
+                    canvas.create_rectangle((i * 2 + 2) * scale, (j * 2 + 1) * scale, (i * 2 + 3) * scale,
+                                            (j * 2 + 2) * scale, fill='black', width=0)
+                if not self.paths[i][j][DIRECTIONS[3]]:
+                    canvas.create_rectangle((i * 2 + 1) * scale, (j * 2 + 2) * scale, (i * 2 + 2) * scale,
+                                            (j * 2 + 3) * scale, fill='black', width=0)
+
+    def draw_flood(self, canvas: Canvas, step_time_ms: int):
+        scale = canvas.winfo_width() / (self.size * 2 + 1)
         flood_step = self.flood.step()
+        rgb = self.to_rgba(flood_step["position"])
+        color = "#" + \
+                str(hex(int(rgb[0] * 255)))[2:].rjust(2, '0') + \
+                str(hex(int(rgb[1] * 255)))[2:].rjust(2, '0') + \
+                str(hex(int(rgb[2] * 255)))[2:].rjust(2, '0')
+        for point in flood_step["front"]:
+            canvas.create_rectangle((point["x"] * 2 + 1) * scale,
+                                    (point["y"] * 2 + 1) * scale,
+                                    (point["x"] * 2 + 2) * scale,
+                                    (point["y"] * 2 + 2) * scale, fill=color, width=0)
+            if point['from'] == DIRECTIONS[0]:
+                canvas.create_rectangle((point["x"] * 2) * scale,
+                                        (point["y"] * 2 + 1) * scale,
+                                        (point["x"] * 2 + 1) * scale,
+                                        (point["y"] * 2 + 2) * scale, fill=color, width=0)
+            elif point['from'] == DIRECTIONS[1]:
+                canvas.create_rectangle((point["x"] * 2 + 1) * scale,
+                                        (point["y"] * 2) * scale,
+                                        (point["x"] * 2 + 2) * scale,
+                                        (point["y"] * 2 + 1) * scale, fill=color, width=0)
+            elif point['from'] == DIRECTIONS[2]:
+                canvas.create_rectangle((point["x"] * 2 + 2) * scale,
+                                        (point["y"] * 2 + 1) * scale,
+                                        (point["x"] * 2 + 3) * scale,
+                                        (point["y"] * 2 + 2) * scale, fill=color, width=0)
+            elif point['from'] == DIRECTIONS[3]:
+                canvas.create_rectangle((point["x"] * 2 + 1) * scale,
+                                        (point["y"] * 2 + 2) * scale,
+                                        (point["x"] * 2 + 2) * scale,
+                                        (point["y"] * 2 + 3) * scale, fill=color, width=0)
+        if len(flood_step["front"]) > 0:
+            canvas.after(step_time_ms, lambda: self.draw_flood(canvas, step_time_ms))
+
+    def draw_flood_terse(self, canvas, step_time_ms):
         scale = canvas.winfo_width() / self.size
-        # rgb = colorsys.hsv_to_rgb(flood_step["hue"] / 360, 1, 1)
+        flood_step = self.flood.step()
         rgb = self.to_rgba(flood_step["position"])
         color = "#" + \
                 str(hex(int(rgb[0] * 255)))[2:].rjust(2, '0') + \
@@ -40,7 +92,7 @@ class Maze:
             canvas.create_rectangle(point["x"] * scale, point["y"] * scale, (point["x"] + 1) * scale,
                                     (point["y"] + 1) * scale, fill=color, width=0)
         if len(flood_step["front"]) > 0:
-            canvas.after(step_time_ms, lambda: self.draw_flood(canvas, step_time_ms))
+            canvas.after(step_time_ms, lambda: self.draw_flood_terse(canvas, step_time_ms))
 
     def to_rgba(self, value):
         if value < 256:

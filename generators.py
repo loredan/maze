@@ -24,8 +24,7 @@ class RandomTraversal:
         if 0 <= new_position[0] < len(maze.paths) and 0 <= new_position[1] < len(maze.paths) and \
                 new_position not in self.generated:
             self.generated += [new_position]
-            maze.set_path_point(point, True)
+            maze.set_path_point(Maze.normalize_point(point['x'], point['y'], point['direction']), True)
             for direction in DIRECTIONS:
-                point = Maze.normalize_point(new_position[0], new_position[1], direction)
-                if maze.get_path(point) == False:
-                    self.front += [point]
+                if maze.get_path(Maze.normalize_point(new_position[0], new_position[1], direction)) == False:
+                    self.front += [{'x': new_position[0], 'y': new_position[1], 'direction': direction}]
