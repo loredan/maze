@@ -1,17 +1,13 @@
+from generators import RandomTraversal
 from maze import *
 from tkinter import *
 
 root = Tk()
-root.geometry("500x500+0+0")
-canvas = Canvas(root, width=500, height=500)
+root.geometry("1000x1000+0+0")
+canvas = Canvas(root, width=1000, height=1000)
 canvas.pack()
-maze = Maze(500)
-maze.walls = []
-for i in range(500):
-    column = []
-    for j in range(500):
-        column += [{DIRECTIONS[2]: j != 0, DIRECTIONS[3]: False}]
-    maze.walls += [column]
-maze.flood = maze.Flood(maze.walls, 1)
+maze = Maze(100)
+generator = RandomTraversal()
+generator.generate(maze)
 canvas.after(0, lambda: maze.draw_flood(canvas, 10))
 root.mainloop()
