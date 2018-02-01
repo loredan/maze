@@ -1,6 +1,3 @@
-import colorsys
-from matplotlib._cm import cubehelix as mcubehelix
-from matplotlib.cm import ScalarMappable
 import cubehelix
 
 DIRECTIONS = ["LEFT", "TOP", "RIGHT", "BOTTOM"]
@@ -16,8 +13,8 @@ class Maze:
                 column += [{DIRECTIONS[2]: False, DIRECTIONS[3]: False}]
             self.walls += [column]
         self.flood = self.Flood(self.walls, 1)
-        self.colormap1 = cubehelix.cmap(startHue=-100, endHue=80, minSat=0.75, maxSat=1.5, minLight=0.35, maxLight=0.8)
-        self.colormap2 = cubehelix.cmap(startHue=-100, endHue=80, minSat=1.5, maxSat=0.75, minLight=0.8, maxLight=0.35)
+        self.colormap1 = cubehelix.cmap(startHue=-100, endHue=300, minLight=0.35, maxLight=0.8)
+        self.colormap2 = cubehelix.cmap(startHue=540, endHue=140, minLight=0.35, maxLight=0.8, reverse=True)
 
     def set_wall(self, x, y, direction, wall):
         if x < 0 or y < 0 or x > len(self.walls) or y > len(self.walls) or x == len(
