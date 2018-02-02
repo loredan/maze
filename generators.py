@@ -9,12 +9,10 @@ class RandomTraversal:
         self.front = [{"x": 0, "y": 0, "direction": DIRECTIONS[2]}, {"x": 0, "y": 0, "direction": DIRECTIONS[2]}]
 
     def generate(self, maze):
-        counter = 0
         while len(self.front) > 0:
             self.step(maze)
-            counter += 1
-            if counter % 1000 == 0:
-                print(counter, len(self.front))
+            if len(self.generated) % 100 == 0:
+                print(len(self.generated), len(self.front))
 
     def step(self, maze):
         point = random.choice(self.front)

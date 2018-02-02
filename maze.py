@@ -10,15 +10,19 @@ class Maze:
     def __init__(self, size):
         self.size = size
         self.paths = []
-        for i in range(size):
-            column = []
-            for j in range(size):
-                column += [
-                    {DIRECTIONS[2]: False if i < size - 1 else None, DIRECTIONS[3]: False if j < size - 1 else None}]
-            self.paths += [column]
+        self.reset_maze()
         self.flood = self.Flood(self, 10)
         self.colormap1 = cubehelix.cmap(startHue=-100, endHue=300, minLight=0.35, maxLight=0.8)
         self.colormap2 = cubehelix.cmap(startHue=540, endHue=140, minLight=0.35, maxLight=0.8, reverse=True)
+
+    def reset_maze(self):
+        self.paths = []
+        for i in range(self.size):
+            column = []
+            for j in range(self.size):
+                column += [{DIRECTIONS[2]: False if i < self.size - 1 else None,
+                            DIRECTIONS[3]: False if j < self.size - 1 else None}]
+            self.paths += [column]
 
     def set_path_point(self, point, path):
         self.set_path(point['x'], point['y'], point['direction'], path)
@@ -43,6 +47,10 @@ class Maze:
                 if not self.paths[i][j][DIRECTIONS[3]]:
                     canvas.create_rectangle((i * 2 + 1) * scale, (j * 2 + 2) * scale, (i * 2 + 2) * scale,
                                             (j * 2 + 3) * scale, fill='black', width=0)
+
+    def start_flood(self, canvas: Canvas, step_time_ms: int):
+        self.flood.reset()
+        self.draw_flood(canvas, step_time_ms)
 
     def draw_flood(self, canvas: Canvas, step_time_ms: int):
         scale = canvas.winfo_width() / (self.size * 2 + 1)
@@ -79,6 +87,10 @@ class Maze:
                                         (point["y"] * 2 + 3) * scale, fill=color, width=0)
         if len(flood_step["front"]) > 0:
             canvas.after(step_time_ms, lambda: self.draw_flood(canvas, step_time_ms))
+
+    def start_flood_terse(self, canvas, step_time_ms):
+        self.flood.reset()
+        self.draw_flood_terse(canvas, step_time_ms)
 
     def draw_flood_terse(self, canvas, step_time_ms):
         scale = canvas.winfo_width() / self.size
@@ -132,6 +144,11 @@ class Maze:
         def __init__(self, maze, step):
             self.maze = maze
             self.position_step = step
+            self.position = 0
+            self.front = ()
+            self.reset()
+
+        def reset(self):
             self.position = 0
             self.front = ({"x": 0, "y": 0, "from": DIRECTIONS[0]},)
 
